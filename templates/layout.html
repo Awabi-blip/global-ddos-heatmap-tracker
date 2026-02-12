@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global DDoS Heatmap</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css">
+    
+    <!-- LINK TO YOUR MAIN CSS FILE -->
+    <link rel="stylesheet" href="/static/styles.css?v=2">
+    
+    <link rel="icon" type="image/png" href="/static/shield.png">
+    
+    <!-- Minimal local overrides specific to layout structure ONLY -->
+    <style>
+        /* Sticky Footer Logic (Functional Layout Only) */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        main {
+            flex-grow: 1; 
+        }
+
+        /* Status Dot (Component Specific) */
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <ul>
+                <li>
+                    <strong>
+                        <span></span> 
+                                DDOS-Heatmap-Tracker
+                    </strong>
+                </li>
+            </ul>
+            
+            <ul>
+                {% if session_id %} 
+                <li>
+                    <a href="/dashboard">Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="/heatmap">Heatmap</a>
+                </li>
+                <li>
+                    <a href="/faq">FAQ</a>
+                </li>
+
+
+                <li>
+                    <a href="/logout" role="button" class="outline">Logout</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block main %}{% endblock %}
+    </main>
+
+    <!-- Footer using styles.css rules -->
+    <footer style="font-size: 0.7rem; text-align: center; margin-top: auto; padding-bottom: 1rem; opacity: 0.8;">
+        <hr style="margin-bottom: 1rem; opacity: 0.2;">
+        <small>
+            <span class="status-dot"></span> System Status: <strong>OPERATIONAL</strong> 
+            • Built with <strong>FastAPI</strong> & Pico CSS
+        </small>
+        <br>
+        <small style="opacity: 0.5;">
+            Frontend by Google Gemini 3 and Claude Sonnet 4.5 
+        </small>
+    </footer>
+
+</body>
+</html>
