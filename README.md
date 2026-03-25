@@ -1,4 +1,4 @@
 # Design Document 
-## By Muhammad Awab
+**By Muhammad Awab**
 
 # Scope
