@@ -26,9 +26,7 @@ async def lifespan(app: FastAPI):
     await pool.close()
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-templates = Jinja2Templates(directory="templates")
 # templates.env.filters["tojson"] = lambda obj: json.dumps(obj)
 
 app.add_middleware(
@@ -109,21 +107,15 @@ async def dashboard(request: Request, session_id: LoggedIn):
 
     recent_logs = await app_sql(sql)
 
-    return templates.TemplateResponse(
-        name = "dashboard.html",
-        request = request,
-        context = {
+    return {
         "username" : username,
         "session_id" : session_id,
         "recent_logs" : recent_logs
-        }
-    )
+        } 
 
 @app.api_route("/logout", methods=['GET', 'POST'])
 async def logout(request:Request, _ = LoggedIn):
     request.session.clear()
-
-    return RedirectResponse("/login.html", status_code=303)
 
 @app.api_route("/heatmap", methods=['GET'])
 async def show_global_heatmap(request : Request, session_id = LoggedIn):
@@ -140,7 +132,7 @@ async def show_global_heatmap(request : Request, session_id = LoggedIn):
     # turns that validated python dict into json to be sent to frontend
     json_abusive_ips: str = abusive_ips_adapter.dump_json(validated_ips).decode('utf-8')
 
-    
+    # de reference sql value to reuse it again
     del sql
     
     sql: str = """ SELECT COUNT(*) AS attack_count, country_code FROM top_countries GROUP BY country_code
@@ -155,14 +147,10 @@ async def show_global_heatmap(request : Request, session_id = LoggedIn):
     # dump it to json and parse it to frontend
     json_abusive_countries: str = abusive_country_adapter.dump_json(validated_abusive_countries).decode('utf-8')
 
-    return templates.TemplateResponse(
-        name = "heatmap.html",
-        request= request,
-        context = {
+    return {
             "session_id" : session_id,
             "data": json_abusive_ips,
             "data_countries": json_abusive_countries
         }
 
-    )
 
