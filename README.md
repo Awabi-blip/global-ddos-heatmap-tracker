@@ -1,3 +1,16 @@
+# Design Document 
+by Muhammad Awab
+
+# The Project
+A tool to fetch, enrich, and store abusive IP addresses using AbuseIPDB and GeoIP2.
+
+## Represnetation
+
+``` Python
+AbuseIPDB -> Server (FastAPI) -> Json Dump -> Json Read -> Transformation using GeoIP2 -> Into Database ( PostgreSQL ) -> Out of Database -> Server -> Frontend
+```
+
+
 ## Scope
 The purpose of this application is to provide a representative analysis of abusiveIP logs by fetching them from a popular abuse log API which is the **AbuseIPDB**, populating it with more data which was made possible thanks to the amazing project of MaxMind in **Geoip2 database**
 
