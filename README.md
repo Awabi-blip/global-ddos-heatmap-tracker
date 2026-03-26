@@ -51,7 +51,7 @@ async with httpx.AsyncClient() as client:
 - You can get your API_KEY from this URL: 
 https://www.abuseipdb.com/account/api
 go to the page and scroll down a bit and you can see this option to create your API Key
-![alt text](image.png)
+<img width="1400" height="202" alt="image" src="https://github.com/user-attachments/assets/0559f51c-898d-4e55-9d2b-5f2f234b7970" />
 Create the key and paste it in  a .env file.
 
 ### Dumping the json in a .json file:
@@ -216,7 +216,7 @@ https://docs.python.org/3/library/itertools.html#itertools.batched
 
 
 After the insert the data looks like this:
-![alt text](image-1.png) 
+<img width="1490" height="221" alt="image" src="https://github.com/user-attachments/assets/72d18ea4-4988-4111-aa56-8de6abe64c54" />
 
 ## The Database Structure
 
