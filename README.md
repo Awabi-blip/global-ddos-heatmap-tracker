@@ -54,6 +54,12 @@ go to the page and scroll down a bit and you can see this option to create your 
 <img width="1400" height="202" alt="image" src="https://github.com/user-attachments/assets/0559f51c-898d-4e55-9d2b-5f2f234b7970" />
 Create the key and paste it in  a .env file.
 
+It will look something like this:
+```.env
+ABUSE_ipdb_API_KEY=your_key_here
+DATABASE_URL=postgresql://user:pass@localhost/dbname
+```
+
 ### Dumping the json in a .json file:
 The **raw_data** variable now has a list of 10K ip_addresses, if you are on a free account, you will only get 5 daily calls, so you must treat the data with safety, dump it in a .json file, with this line of code:
 ``` Python
