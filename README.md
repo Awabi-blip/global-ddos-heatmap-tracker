@@ -30,7 +30,11 @@ HEADERS: dict[str,str] = {
     'Key': API_KEY
 }
 
-# Parameters that define what kind of data you want, confidenceMinimum set to 100 means only show me the IPs with a 100% confirmation of abuse, and limit set to 10k, which is the highest you can fetch in one call, if you want less data, you can decrease the limit, but you can't go higher than 10k.
+# Parameters that define what kind of data you want,
+confidenceMinimum set to 100 means only show me the IPs with a
+100% confirmation of abuse, and limit set to 10k, which is the highest
+you can fetch in one call, if you want less data, you can decrease the limit,
+but you can't go higher than 10k.
 
 PARAMS: dict[str, str] = {
     'confidenceMinimum': '100',
