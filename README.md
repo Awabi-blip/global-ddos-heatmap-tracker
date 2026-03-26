@@ -1,5 +1,5 @@
 ## Scope
-The purpose of this application is to provide a representative analaysis of abusiveIP logs by fetching them from a popular abuse log API which is the **AbuseIPDB**, populating it with more data which was made possible thanks to the amazing project of MaxMind in **Geoip2 database**
+The purpose of this application is to provide a representative analysis of abusiveIP logs by fetching them from a popular abuse log API which is the **AbuseIPDB**, populating it with more data which was made possible thanks to the amazing project of MaxMind in **Geoip2 database**
 
 The application takes JSON data from the API call, transforms it to contain more information, and be sent as a JSON to the frontend, which can then make use of that processed data to map **Abusive IP addresses** on a globe using a library like react globe.
 
@@ -17,7 +17,7 @@ The data that we fetch from the API looks something like this:
 
 ### Extraction
 
-To extract this data into your own application you can use the below code:
+The extraction process handles the API requests and authentication as follows:
 
 ```python
 # Map out the skeleton of the API call
@@ -68,7 +68,7 @@ to secure a volatile state in data fetching, a local dump, based on the size of 
 ### Transformation
 The API fetch gives us enough information to map those IP addresses and get more information about them.
 
-Know the famous advice "keep your IP safe or else you can be tracked", we are going to use that exact phenomenon to map these IP addresses to a physical location, tho no precisely accurate becuase the database we are using maps the IP addresses to the city first, and then returns the location of that city, but it is enough for my project.
+Know the famous advice "keep your IP safe or else you can be tracked", we are going to use that exact phenomenon to map these IP addresses to a physical location, though not precisely accurate because the database we are using maps the IP addresses to the city first, and then returns the location of that city, but it is enough for my project.
 The database we are using is the **GeoIp2 database provided by MaxMind**, and icing on the cake it has a python module!
 
 The database takes an IP address and can return multiple pieces of information about it, learn more about the database here:
@@ -85,7 +85,7 @@ import geoip2.database
 ```
 Then you can define a reader object and read the data from it, by giving it an IP address to query by:
 ```Python
-with geoip2.database.Reader('GeoLiteGe2-City.mmdb') as ip_reader:
+with geoip2.database.Reader('GeoLite2-City.mmdb') as ip_reader:
 ```
 After this you can query the database with an IP Address like this:
 ```Python
