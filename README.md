@@ -1,4 +1,218 @@
-# Design Document 
-**By Muhammad Awab**
+## Scope
+The purpose of this application is to provide a representative analaysis of abusiveIP logs by fetching them from a popular abuse log API which is the **AbuseIPDB**, populating it with more data which was made possible thanks to the amazing project of MaxMind in **Geoip2 database**
 
-# Scope
+The application takes JSON data from the API call, transforms it to contain more information, and be sent as a JSON to the frontend, which can then make use of that processed data to map **Abusive IP addresses** on a globe using a library like react globe.
+
+## The Data Transformation
+The data that we fetch from the API looks something like this:
+
+```json
+
+        {"ipAddress": "2.57.122.177", 
+        "countryCode": "RO", 
+        "abuseConfidenceScore": 100, 
+        "lastReportedAt": "2026-02-12T06:17:02+00:00"}
+        *10k items (in one api call)
+````
+
+### Extraction
+
+To extract this data into your own application you can use the below code:
+
+```python
+# Map out the skeleton of the API call
+API_KEY: str = os.getenv('ABUSE_ipdb_API_KEY')
+URL: str = 'https://api.abuseipdb.com/api/v2/blacklist'
+
+# HTTP headers checked by the API for authentication
+HEADERS: dict[str,str] = {
+    'Accept': 'application/json',
+    'Key': API_KEY
+}
+
+# Parameters that define what kind of data you want, confidenceMinimum set to 100 means only show me the IPs with a 100% confirmation of abuse, and limit set to 10k, which is the highest you can fetch in one call, if you want less data, you can decrease the limit, but you can't go higher than 10k.
+
+PARAMS: dict[str, str] = {
+    'confidenceMinimum': '100',
+    'limit': '10000'
+}
+
+async with httpx.AsyncClient() as client:
+    r: httpx.Response = await client.get(url=URL, headers=HEADERS, params= PARAMS)
+        
+    if r.status_code == 200:
+        raw_data = r.json()
+
+```
+- You can get your API_KEY from this URL: 
+https://www.abuseipdb.com/account/api
+go to the page and scroll down a bit and you can see this option to create your API Key
+![alt text](image.png)
+Create the key and paste it in  a .env file.
+
+### Dumping the json in a .json file:
+The **raw_data** variable now has a list of 10K ip_addresses, if you are on a free account, you will only get 5 daily calls, so you must treat the data with safety, dump it in a .json file, with this line of code:
+``` Python
+# quickly save the data in-case power goes out
+# use write to overwrite previously written data
+with open('data.json', 'w') as f:
+    json.dump(raw_data, f)
+```
+- This will immediately dump the data into a file, since the data is only 2mb, this is affordable, it is slightly redundant because the optimal approach should be to store to the database correctly, my reason here to dump it into a local .json file was because I needed to dump it right after fetching it, the database insertion could take time and additionally, in my work flow, the data.json file always stores the only the last fetched data, and because it is opened for **write** and not **append** it stores only the new piece of data everytime, discarding the old one, because that functionality is leveraged to the **database** ofcourse, so in conclusion of these reasons, 
+to secure a volatile state in data fetching, a local dump, based on the size of the fetched data **(2mb)**, made sense.
+
+### Transformation
+The API fetch gives us enough information to map those IP addresses and get more information about them.
+
+Know the famous advice "keep your IP safe or else you can be tracked", we are going to use that exact phenomenon to map these IP addresses to a physical location, tho no precisely accurate becuase the database we are using maps the IP addresses to the city first, and then returns the location of that city, but it is enough for my project.
+The database we are using is the **GeoIp2 database provided by MaxMind**, and icing on the cake it has a python module!
+
+The database takes an IP address and can return multiple pieces of information about it, learn more about the database here:
+- https://www.maxmind.com/en/geoip-databases
+
+To get started you will be downloading their latest database, called the 'GeoLite2-City.mmdb' directly into your computer from their website check here:
+- https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/
+
+and open it with their module reader (more on this down)
+
+Once downloaded, import the module with this code:
+```Python
+import geoip2.database
+```
+Then you can define a reader object and read the data from it, by giving it an IP address to query by:
+```Python
+with geoip2.database.Reader('GeoLiteGe2-City.mmdb') as ip_reader:
+```
+After this you can query the database with an IP Address like this:
+```Python
+ip_information: object = ip_reader.city(ip_address)
+```
+It would return a city object, for that IP address, which we can then use to map it onto a phyiscal city and get that city's latitude and longitude like this:
+
+```Python
+latitude: float = ip_information.location.latitude
+d['latitude'] = latitude
+
+longitude: float = ip_information.location.longitude     
+d['longitude'] = longitude      
+```
+Note that the database can return an 
+
+```Python
+    geoip2.errors.AddressNotFoundError
+```
+which is why we wrap our entire block of code in a ```try...except block```
+
+```Python
+def transform_data(raw_data : list[dict[str,Any]]) -> list[dict[str,Any]]:
+    with geoip2.database.Reader('GeoLiteGe2-City.mmdb') as ip_reader:
+
+        for d in raw_data['data']:
+            ip_address: str = d.get("ipAddress")
+            try:
+                # get the ip information from the reader, returns an object with 
+                # certain methods
+                ip_information: object = ip_reader.city(ip_address)
+                
+                # get latitude and longitude from the ip_reader instance
+                latitude: float = ip_information.location.latitude
+                d['latitude'] = latitude
+                
+                longitude: float = ip_information.location.longitude     
+                d['longitude'] = longitude      
+            
+            except geoip2.errors.AddressNotFoundError:
+                d['latitude'] = None
+                d['longitude'] = None
+        
+    return raw_data['data']
+
+```
+
+I also want to bring your attention to a method I used to keep my app functioning while performing this CPU intensive transformation, the use ``` asyncio.to_thread ``` to offload a synchronous library (GeoIP2) into an asynchronous thread.
+
+``` Python 
+
+transformed_data: list[dict[str,Any] = await asyncio.to_thread(transform_data, raw_data=raw_data)
+
+```
+
+The way it works is that C libraries (yes GeoIP2) is a C library, not the database, but the library we imported that provides the functions (both are different if you are confused, note the library is a python module, while the database is something you'd download from the MaxMind website (link above) and store it in your local machine or cloud), so the way C libraries work is some of them (GeoIP2, numpy, pandas) unlock the GIL and allow multi_processing to happen, so by loading this operation into another async thread, I get 2 in 1 things, a multi threaded transformer function that also does not block the main thread, tho when I call the python native code i.e ``` d['latitude'] = None ``` The GIL is again acquired to make this happen, so partial multi_processing, full async (async does not care about GIL), which is pretty fast!
+
+### Load
+The main thread waits for the data to be processed and then bulk_inserts it into the database.
+
+Here's how how you can achieve it:
+
+```Python
+transformed_data: list[dict[str,Any]]= await asyncio.to_thread(transform_data, raw_data=raw_data)
+
+which looks like:
+{  
+  "ip_address": "159.223.212.254",
+  "country_code": "NL",
+  "latitude": 52.3520,
+  "longitude": 4.9392,
+  "last_reported_at": "2026-02-11 14:17:01+05"
+}
+
+# Once the data is back, insert it into the database.
+sql : str = """ 
+    INSERT INTO abusive_ips 
+    (ip_address, country_code,
+    latitude, longitude, last_reported_at) 
+    
+    VALUES (%(ipAddress)s, %(countryCode)s, 
+    %(latitude)s, 
+    %(longitude)s,
+    %(lastReportedAt)s)
+
+    ON CONFLICT (ip_address)
+    DO UPDATE SET
+        last_reported_at = EXCLUDED.last_reported_at
+
+"""    
+await executeMany_sql(sql, transformed_data)
+
+```
+
+- The ON CONFLICT code checks if the IP Address exists in our Database from before (this can happen if 2 API calls return overlapping APIs, in which case we just update when they were last_reported_at).
+
+
+
+executeMany_Sql:
+
+```Python
+async def executeMany_sql(sql: str, data: list[dict[str,any]]) -> Optional[list[dict[str,str]]]:
+    try:
+        async with await psycopg.AsyncConnection.connect(
+            os.getenv("DATABASE_URL"),
+            row_factory=dict_row,
+        ) as connection:
+            
+            async with connection.transaction():
+                async with connection.cursor() as cursor:
+                    ## executemany used to process large datasets
+                    await cursor.executemany(sql, data)
+                    
+                    if cursor.description:
+                        result = await cursor.fetchall()
+                    else:
+                        result = None  
+                    return result
+
+    
+    except Exception as e:
+        print(f"Database Error: {e}")
+
+```
+
+- If your dataset is extremely large, a few gigabytes or more, consider using itertools.batched (it will chunk your data and spread the data insert into multiple database calls, because if the data exceeds your RAM, you won't be able to hold it in one python variable)
+https://docs.python.org/3/library/itertools.html#itertools.batched
+
+
+After the insert the data looks like this:
+![alt text](image-1.png) 
+
+## The Database Structure
+
