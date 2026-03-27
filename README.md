@@ -265,17 +265,61 @@ country_code_2 : represents the ISO Alpha 3 codes.
 ```SQL
 latitude DECIMAL(10,7) CHECK (latitude >= -90 AND latitude <= 90)
 longitude DECIMAL(11,7) CHECK (longitude >= -180 AND longitude <= 180)
+```
 
-The check to ensure that a latitude is between -90 and 90
-and a longitude is beteen -180 to 180
-ensures that the values being inserted into the database, does actually map onto Earthly locations (a latitude can only be from -90 to 90 and a longitude can only be from -180 to 180)
+The check to ensure that a latitude is between 
+```-90 and 90and a longitude is beteen -180 to 180```
+ensures that the values being inserted into the database, 
+does actually map onto Earthly locations (a latitude can only be from 
+```-90 to 90 and a longitude can only be from -180 to 180)```
 
-DECIMAL(10,7) which leaves room for 7 digits after decimal point and 3 integers. The maximum Geoip2 returns is 4 decimal places, but making it up to 7 is better because some real world scenarios can go up to 6 or 7 decimal points. 
+DECIMAL(10,7) which leaves room for 7 digits after decimal point and 3 integers. 
+The maximum Geoip2 returns is 4 decimal places, but making it up to 7 is better 
+because some real world scenarios can go up to 6 or 7 decimal points. 
 
 If strictly aligned to GeoIp2 you are safe with (7,4).
+                                                        
+Note that in postgreSQL the syntax is like (how many digits before decimal, 
+how many digits after decimal).
 
-Note that in postgreSQL the syntax is like (how many digits before decimal, how many digits after decimal).
+```SQL
+ip_address INET NOT NULL UNIQUE
 ```
+The INET data type makes it easier for postgrSQL to make a Unique Index for ip_addresss, and it also makes it easier to query them, i.e you can format your Ip Address queries based on subnet notation like:
+
+```SQL
+WHERE ip_address > 255.255.255.0
+```
+
+>or your standard other operators ```=, >=, <>, <=, <```!
+
+
+**INET** also logically sorts the data by their actual network value rather than alphebatically, i.e 192.168.1.2 comes correctly before 192.168.1.10 (if we stored them as strings, it would get messy fast for indexing)
+
+The **INET** datatype also has a built-in verification for IPv4 or IPv6 addresses, that means an invalid IpAddress, let's say 256.0.0.0 won't be allowed!   
+
+### Views
+
+```SQL
+CREATE VIEW top_countries AS 
+SELECT id, country_code, last_reported_at
+FROM abusive_ips 
+ORDER BY last_reported_at DESC
+LIMIT 10000;
+```
+
+I actually needed a view for this not because it is a common query,  but because a CTE or a View was required.
+
+>The problem this solves is simple, if I ran **ORDER BY** last_reported_at and then did limit 10000 I could not run **GROUP BY** after that.
+I required the top 10k items recently reported and then GROUP them BY countries to map a heatmap of which country has the "most" attacks originiating.
+
+The query that benefits from that view is:
+```SQL
+SELECT COUNT(*) AS attack_count, country_code 
+FROM top_countries GROUP BY country_code
+```
+
+> This takes that view which has all 10k items recently reported, and then counts the amount of attacks originating from eac country!
 
 
 
