@@ -319,7 +319,7 @@ SELECT COUNT(*) AS attack_count, country_code
 FROM top_countries GROUP BY country_code
 ```
 
-> This takes that view which has all 10k items recently reported, and then counts the amount of attacks originating from eac country!
+> This takes that view which has all 10k items recently reported, and then counts the amount of attacks originating from each country!
 
 
 
