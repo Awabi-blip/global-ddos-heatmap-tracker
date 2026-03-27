@@ -33,13 +33,13 @@ app.add_middleware(
 SessionMiddleware,
 secret_key=os.getenv("SECRET_HEADER_KEY"),
 same_site="lax",  # CSRF protection
-https_only=False
+https_only=True
 )
 
 google_sso = GoogleSSO(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_uri="http://localhost:8000/callback", # Make sure this matches Google Console
+    redirect_uri="https://production-uri-here.com", # Make sure this matches Google Console
 )
 
 @app.middleware("http")
