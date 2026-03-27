@@ -238,4 +238,7 @@ After the insert the data looks like this:
 <img width="1490" height="221" alt="image" src="https://github.com/user-attachments/assets/72d18ea4-4988-4111-aa56-8de6abe64c54" />
 
 ## The Database Structure
+<img width="980" height="600" alt="image" src="https://github.com/user-attachments/assets/ea7814a2-7d01-4cd3-960b-64ecf083d9f7" />
+
+
 
