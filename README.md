@@ -240,6 +240,7 @@ After the insert the data looks like this:
 ## The Database Structure
 <img width="1024" height="627" alt="image" src="https://github.com/user-attachments/assets/05ddff22-13c7-4058-98fb-88b9d21db84e" />
 - Generated Through https://sqlflow.gudusoft.com/#/ and dark modded through Nano Banana 2 
+
 ### Relationships
 ```SQL
 countries have a one to many relationship with abusive_ips
