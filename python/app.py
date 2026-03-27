@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.encoders import jsonable_encoder
+from fastapi.staticfiles import StaticFiles 
+from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 import os, json
 from db import pool, app_sql, script_sql
