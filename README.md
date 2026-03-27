@@ -321,5 +321,48 @@ FROM top_countries GROUP BY country_code
 
 > This takes that view which has all 10k items recently reported, and then counts the amount of attacks originating from each country!
 
+### Security and Auth
+
+#### Auth
+
+I used google login to keep things simple, not having to store passwords myself. Everytime a user logs in via google, they get a session_id that is the primary key alotted by database at the time of insert, this is done via the postgreSQL ```RETURNING``` keyword, that returns a tuple value upon a tuple insert. Below is the code:
+
+```SQL
+
+INSERT INTO app_users (google_id, name, email, total_logins) VALUES (%s, %s, %s, 0)
+ON CONFLICT (google_id)
+DO UPDATE
+    SET name = EXCLUDED.name,
+    total_logins = app_users.total_logins + 1
+RETURNING id 
+-- ON CONFLICT ensures only the affected rows are updated
+-- Don't have to manually provide a WHERE clause.    
+```
+The session_id can be used to uniquely identify each user.
+
+##### Security
+
+The Session Key is protected via the SessionMiddleware, where it assigns the result of a hash function to the session key and attaches the mesh with the key. Something like this:
+> session_id.mesh 
+The mesh is basically = hf(key, session_id) ```hf = hash_function```
+The recieved session_id is ran through the same hash_function before the app hits the main server at a middle point, if the mesh produced, matches the mesh attached to the session_id, it means the user did not tinker with the session_id. Remember, if the user did indeed change the session_id to let's say something like 17 from their original 2, and sent it with the same mesh that they got with hf(key, 2). The middle runs hf(key, 17), gets a different mesh from what the user attached, and blocks the request. A scenario in your mind can come what if user totally replicates the mesh as is too, like somehow they guess our key, (because otherwise the way cryptographich has functions work it is entirely impossible for them to produce the same mesh as mine with the same key, value pair), but if they guess our key correctly, then the security is compromised that is why we put it in a .env file and don't expose it. In production you would keep the secrets in a very secure room with security and metrical approach to access the keys.
+
+SameSate is set to lax which enables CSRF protection, this prevents any link based or malicious activity from an unauthenticated user, i.e a request hyperlink being sent via an HTML request embedding that the server reads and executes something it is not supposed to, i.e a transfer fund.
+
+To prevent SQL injection attacks string format inserts are not used, rather paramterized using placeholders ```%s``` and tuples which is default for psycopg3.
+
+
+## Limitations of the Project:
+
+No login services besides Google.
+
+Does not have data batching implemented for Database inserts, i.e if the API fetch was GigaBytes of data, then holding it in one variable would have overloaded the heap atleast on my local machine, overall bad practise, even if you have a high Gigabyte Ram server. 
+
+Does not have a front-end implementation
+
+>Hope you had a good read!
+
+Honestly this project was too formal and bureaucratic for me that I did not enjoy doing it.
+
 
 
