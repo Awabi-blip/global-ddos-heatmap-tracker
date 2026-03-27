@@ -239,6 +239,41 @@ After the insert the data looks like this:
 
 ## The Database Structure
 <img width="980" height="600" alt="image" src="https://github.com/user-attachments/assets/ea7814a2-7d01-4cd3-960b-64ecf083d9f7" />
+### Relationships
+```SQL
+countries have a one to many relationship with abusive_ips
+```
+- Which means that one country can appear multiple times in the abusive_ips table, but each abusive_ip only originates from one country
+
+To put simply, think of it this way; how many countries does one Ip Address refer to? Obviously one, as IP Address maps to a physical address, whilst one country can have many physical addresses, because geographically countries have large areas, every single tile in that country can point to a different address. That's how one country can have multiple Ip Addresses, but that one Ip Address will only be unique to that country and no other country as the geographic point that Ip represents, can only belong to one country. One piece of land.
+
+### Datatypes
+**Country Codes**:
+```SQL
+char(2) for country_code (PK,JP,PS)
+
+char(3) country_code_3 (PAK,JPN,PSE)
+
+country_code : represents the ISO Alpha 2 codes.
+
+country_code_2 : represents the ISO Alpha 3 codes.
+```
+
+**Latitude and Longitude**:
+```SQL
+latitude DECIMAL(10,7) CHECK (latitude >= -90 AND latitude <= 90)
+longitude DECIMAL(11,7) CHECK (longitude >= -180 AND longitude <= 180)
+
+The check to ensure that a latitude is between -90 and 90
+and a longitude is beteen -180 to 180
+ensures that the values being inserted into the database, does actually map onto Earthly locations (a latitude can only be from -90 to 90 and a longitude can only be from -180 to 180)
+
+DECIMAL(10,7) which leaves room for 7 digits after decimal point and 3 integers. The maximum Geoip2 returns is 4 decimal places, but making it up to 7 is better because some real world scenarios can go up to 6 or 7 decimal points. 
+
+If strictly aligned to GeoIp2 you are safe with (7,4).
+
+Note that in postgreSQL the syntax is like (how many digits before decimal, how many digits after decimal).
+```
 
 
 
