@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS "countries" (
     country_code CHAR(2) NOT NULL UNIQUE,
     county_code_3 CHAR(3) NOT NULL UNIQUE,
     name TEXT NOT NULL UNIQUE,
-    latitude DECIMAL(8,4) CHECK (latitude >= -90 AND latitude <= 90),
-    longitude DECIMAL(8,4) CHECK (longitude >= -180 AND longitude <= 180),
+    latitude DECIMAL(10,7) CHECK (latitude >= -90 AND latitude <= 90),
+    longitude DECIMAL(10,7) CHECK (longitude >= -180 AND longitude <= 180),
     PRIMARY KEY("id")
 );
 
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS abusive_ips(
     id SERIAL,
     ip_address INET NOT NULL UNIQUE,
     country_code CHAR(2),
-    latitude DECIMAL(8,4) CHECK (latitude >= -90 AND latitude <= 90),
-    longitude DECIMAL(8,4) CHECK (longitude >= -180 AND longitude <= 180),
+    latitude DECIMAL(10,7) CHECK (latitude >= -90 AND latitude <= 90),
+    longitude DECIMAL(10,7) CHECK (longitude >= -180 AND longitude <= 180),
     last_reported_at TIMESTAMPTZ(0) DEFAULT now(),
     PRIMARY KEY("id"),
     FOREIGN KEY country_code REFERENCES countries(country_code_2)
@@ -37,14 +37,14 @@ FROM abusive_ips
 ORDER BY last_reported_at DESC
 LIMIT 10000;
 
-
+-- ts is not useful by ane means
 CREATE VIEW users_countries_view AS
 SELECT abusive_ips.ip_address, abusive_ips.latitude, abusive_ips.longitude, 
 countries.name as country
 FROM abusive_ips 
     JOIN countries 
     ON countries.country_code = abusive_ips.country_code
-ORDER BY abusive_ips.last_reported_at DESC;
+ORDER BY abusive_ips.last_reported_at DESC; 
 
 -- CREATE TABLE IF NOT EXISTS "attacks" (
 --     "id" SERIAL,
