@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS abusive_ips(
     latitude DECIMAL(8,4) CHECK (latitude >= -90 AND latitude <= 90),
     longitude DECIMAL(8,4) CHECK (longitude >= -180 AND longitude <= 180),
     last_reported_at TIMESTAMPTZ(0) DEFAULT now(),
-    PRIMARY KEY("id")
+    PRIMARY KEY("id"),
+    FOREIGN KEY country_code REFERENCES countries(country_code_2)
 );
 
 
