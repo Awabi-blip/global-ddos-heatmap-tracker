@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS app_users(
     id SERIAL,
-    google_id VARCHAR(255) UNIQUE NOT NULL,
+    google_id TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     email CITEXT UNIQUE NOT NULL,
     created_at TIMESTAMPTZ(0) DEFAULT now(),
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "countries" (
     numeric INT, 
     country_code CHAR(2) NOT NULL UNIQUE,
     county_code_3 CHAR(3) NOT NULL UNIQUE,
-    name VARCHAR (50) NOT NULL UNIQUE,
+    name VARCHAR TEXT NOT NULL UNIQUE,
     latitude DECIMAL(8,4) CHECK (latitude >= -90 AND latitude <= 90),
     longitude DECIMAL(8,4) CHECK (longitude >= -180 AND longitude <= 180),
     PRIMARY KEY("id")
