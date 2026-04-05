@@ -53,8 +53,7 @@ async def add_security_headers(request: Request, call_next):
 async def login(request : Request):
     request.session.clear()
     
-    if request.method == "POST":
-        return await google_sso.get_login_redirect()
+    return await google_sso.get_login_redirect()
 
     
 
@@ -81,8 +80,8 @@ async def callback(request: Request):
     session_id : int = result[0]["id"]
     request.session["session_id"] : int = session_id
     
-    return RedirectResponse("/dashboard", status_code=303)
-
+    return RedirectResponse("http://localhost:3000/dashboard", status_code=303)
+    
 
 @app.api_route("/dashboard", methods=['GET','POST'])
 async def dashboard(request: Request, session_id: LoggedIn):
@@ -111,6 +110,7 @@ async def dashboard(request: Request, session_id: LoggedIn):
 @app.api_route("/logout", methods=['GET', 'POST'])
 async def logout(request:Request, _ = LoggedIn):
     request.session.clear()
+    return {"message": "Successfully logged out"}
 
 @app.api_route("/heatmap", methods=['GET'])
 async def show_global_heatmap(request : Request, session_id = LoggedIn):
@@ -124,8 +124,6 @@ async def show_global_heatmap(request : Request, session_id = LoggedIn):
     rows_abusive_ips: list[dict[str, IPv4Address | IPv6Address | float]] = await app_sql(sql)
     # use the TypeAdapter to validate 10k rows of data, matches every dict item to the pydantic class (abusive_ips)
     validated_ips: list[AbusiveIp] = abusive_ips_adapter.validate_python(rows_abusive_ips) 
-    # turns that validated python dict into json to be sent to frontend
-    json_abusive_ips: str = abusive_ips_adapter.dump_json(validated_ips).decode('utf-8')
 
     # de reference sql value to reuse it again
     del sql
@@ -139,13 +137,10 @@ async def show_global_heatmap(request : Request, session_id = LoggedIn):
     # pass the list of abusive countries to rust so it serializes it based on the pydantic model
     validated_abusive_countries: list[AbusiveCountry] = abusive_country_adapter.validate_python(abusive_countries)
 
-    # dump it to json and parse it to frontend
-    json_abusive_countries: str = abusive_country_adapter.dump_json(validated_abusive_countries).decode('utf-8')
-
     return {
             "session_id" : session_id,
-            "data": json_abusive_ips,
-            "data_countries": json_abusive_countries
+            "data": validated_ips,
+            "data_countries": validated_abusive_countries
         }
 
 
