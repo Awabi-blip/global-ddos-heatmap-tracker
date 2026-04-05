@@ -2,9 +2,7 @@ from fastapi import FastAPI,Request, BackgroundTasks, HTTPException
 from fastapi_sso.sso.google import GoogleSSO
 from contextlib import asynccontextmanager
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.templating import Jinja2Templates
 from fastapi.encoders import jsonable_encoder
-from fastapi.staticfiles import StaticFiles 
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 import os, json
@@ -57,11 +55,8 @@ async def login(request : Request):
     
     if request.method == "POST":
         return await google_sso.get_login_redirect()
+
     
-    return templates.TemplateResponse(
-       request = request, 
-       name = "login.html"
-    )
 
 @app.get("/callback")
 async def callback(request: Request):
