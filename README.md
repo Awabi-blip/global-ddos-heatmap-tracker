@@ -4,7 +4,7 @@ by Muhammad Awab
 # The Project
 A tool to fetch, enrich, and store abusive IP addresses using AbuseIPDB and GeoIP2.
 
-## Represnetation
+## Representation
 
 ``` Python
 AbuseIPDB -> Server (FastAPI) -> Json Dump -> Json Read -> Transformation using GeoIP2 -> Into Database ( PostgreSQL ) -> Out of Database -> Server -> Frontend
